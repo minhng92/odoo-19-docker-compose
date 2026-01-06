@@ -5,18 +5,18 @@
 Install [docker](https://docs.docker.com/get-docker/) and [docker-compose](https://docs.docker.com/compose/install/) yourself, then run the following to set up first Odoo instance @ `localhost:10019` (default master password: `minhng.info`):
 
 ``` bash
-curl -s https://raw.githubusercontent.com/minhng92/odoo-19-docker-compose/master/run.sh | bash -s odoo-one 10019 20019
+curl -s https://raw.githubusercontent.com/minhng92/odoo-19-docker-compose/master/run.sh | bash -s -- --destination odoo-one --port 10019 --chat 20019
 ```
 and/or run the following to set up another Odoo instance @ `localhost:11019` (default master password: `minhng.info`):
 
 ``` bash
-curl -s https://raw.githubusercontent.com/minhng92/odoo-19-docker-compose/master/run.sh | bash -s odoo-two 11019 21019
+curl -s https://raw.githubusercontent.com/minhng92/odoo-19-docker-compose/master/run.sh | bash -s -- --destination odoo-two --port 11019 --chat 21019
 ```
 
-Some arguments:
-* First argument (**odoo-one**): Odoo deploy folder
-* Second argument (**10019**): Odoo port
-* Third argument (**20019**): live chat port
+Arguments:
+* `--destination`: Odoo deploy folder (e.g., **odoo-one**)
+* `--port`: Odoo port (e.g., **10019**)
+* `--chat`: Live chat port (e.g., **20019**)
 
 If `curl` is not found, install it:
 
