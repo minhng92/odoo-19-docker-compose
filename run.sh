@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 DESTINATION=$1
 PORT=$2
 CHAT=$3
