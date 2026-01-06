@@ -77,11 +77,18 @@ find $DESTINATION -type d -exec chmod 755 {} \;
 
 chmod +x $DESTINATION/entrypoint.sh
 
+# Check if docker needs sudo - docker ps exits with error if user lacks permissions
+DOCKER_SUDO=""
+if ! docker ps >/dev/null 2>&1; then
+  echo "Docker requires sudo privileges"
+  DOCKER_SUDO="sudo"
+fi
+
 # Run Odoo
 if ! is_present="$(type -p "docker-compose")" || [[ -z $is_present ]]; then
-  docker compose -f $DESTINATION/docker-compose.yml up -d
+  $DOCKER_SUDO docker compose -f $DESTINATION/docker-compose.yml up -d
 else
-  docker-compose -f $DESTINATION/docker-compose.yml up -d
+  $DOCKER_SUDO docker-compose -f $DESTINATION/docker-compose.yml up -d
 fi
 
 
