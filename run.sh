@@ -1,7 +1,39 @@
 #!/bin/bash
-DESTINATION=$1
-PORT=$2
-CHAT=$3
+set -euo pipefail
+
+# Parse named arguments - no defaults, crash if missing
+DESTINATION=""
+PORT=""
+CHAT=""
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --destination)
+      DESTINATION="$2"
+      shift 2
+      ;;
+    --port)
+      PORT="$2"
+      shift 2
+      ;;
+    --chat)
+      CHAT="$2"
+      shift 2
+      ;;
+    *)
+      echo "Error: Unknown option: $1" >&2
+      echo "Usage: $0 --destination <path> --port <port> --chat <chat_port>" >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Validate all required arguments are provided
+if [[ -z "$DESTINATION" ]] || [[ -z "$PORT" ]] || [[ -z "$CHAT" ]]; then
+  echo "Error: Missing required arguments" >&2
+  echo "Usage: $0 --destination <path> --port <port> --chat <chat_port>" >&2
+  exit 1
+fi
 
 # Clone Odoo directory
 git clone --depth=1 https://github.com/minhng92/odoo-19-docker-compose $DESTINATION
@@ -45,11 +77,18 @@ find $DESTINATION -type d -exec chmod 755 {} \;
 
 chmod +x $DESTINATION/entrypoint.sh
 
+# Check if docker needs sudo - docker ps exits with error if user lacks permissions
+DOCKER_SUDO=""
+if ! docker ps >/dev/null 2>&1; then
+  echo "Docker requires sudo privileges"
+  DOCKER_SUDO="sudo"
+fi
+
 # Run Odoo
 if ! is_present="$(type -p "docker-compose")" || [[ -z $is_present ]]; then
-  docker compose -f $DESTINATION/docker-compose.yml up -d
+  $DOCKER_SUDO docker compose -f $DESTINATION/docker-compose.yml up -d
 else
-  docker-compose -f $DESTINATION/docker-compose.yml up -d
+  $DOCKER_SUDO docker-compose -f $DESTINATION/docker-compose.yml up -d
 fi
 
 
