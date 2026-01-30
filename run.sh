@@ -1,10 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-# Parse named arguments - no defaults, crash if missing
+# Parse named arguments (required: destination/port/chat; optional: password)
 DESTINATION=""
 PORT=""
 CHAT=""
+PASSWORD=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -20,9 +21,13 @@ while [[ $# -gt 0 ]]; do
       CHAT="$2"
       shift 2
       ;;
+    --password)
+      PASSWORD="$2"
+      shift 2
+      ;;
     *)
       echo "Error: Unknown option: $1" >&2
-      echo "Usage: $0 --destination <path> --port <port> --chat <chat_port>" >&2
+      echo "Usage: $0 --destination <path> --port <port> --chat <chat_port> [--password <master_password>]" >&2
       exit 1
       ;;
   esac
@@ -31,13 +36,22 @@ done
 # Validate all required arguments are provided
 if [[ -z "$DESTINATION" ]] || [[ -z "$PORT" ]] || [[ -z "$CHAT" ]]; then
   echo "Error: Missing required arguments" >&2
-  echo "Usage: $0 --destination <path> --port <port> --chat <chat_port>" >&2
+  echo "Usage: $0 --destination <path> --port <port> --chat <chat_port> [--password <master_password>]" >&2
   exit 1
 fi
 
 # Clone Odoo directory
 git clone --depth=1 https://github.com/minhng92/odoo-19-docker-compose $DESTINATION
 rm -rf $DESTINATION/.git
+
+# Determine master password (use provided value or config default)
+CONFIG_PATH="$DESTINATION/etc/odoo.conf"
+DEFAULT_ADMIN_PASSWD="$(grep -E '^[[:space:]]*admin_passwd[[:space:]]*=' "$CONFIG_PATH" | head -n 1 | sed -E 's/^[[:space:]]*admin_passwd[[:space:]]*=[[:space:]]*//')"
+MASTER_PASSWORD="${PASSWORD:-$DEFAULT_ADMIN_PASSWD}"
+
+escape_sed_replacement() {
+  printf '%s' "$1" | sed -e 's/[\\/&]/\\&/g'
+}
 
 # Create PostgreSQL directory
 mkdir -p $DESTINATION/postgresql
@@ -59,16 +73,23 @@ else
   sudo sysctl -p
 fi
 
-# Set ports in docker-compose.yml
-# Update docker-compose configuration
+# Set ports in docker-compose.yml and optionally update master password
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS sed syntax
   sed -i '' 's/10019/'$PORT'/g' $DESTINATION/docker-compose.yml
   sed -i '' 's/20019/'$CHAT'/g' $DESTINATION/docker-compose.yml
+  if [[ -n "$PASSWORD" ]]; then
+    ESCAPED_PASSWORD="$(escape_sed_replacement "$MASTER_PASSWORD")"
+    sed -i '' -E "s/^[[:space:]]*admin_passwd[[:space:]]*=.*/admin_passwd = $ESCAPED_PASSWORD/" "$CONFIG_PATH"
+  fi
 else
   # Linux sed syntax
   sed -i 's/10019/'$PORT'/g' $DESTINATION/docker-compose.yml
   sed -i 's/20019/'$CHAT'/g' $DESTINATION/docker-compose.yml
+  if [[ -n "$PASSWORD" ]]; then
+    ESCAPED_PASSWORD="$(escape_sed_replacement "$MASTER_PASSWORD")"
+    sed -i -E "s/^[[:space:]]*admin_passwd[[:space:]]*=.*/admin_passwd = $ESCAPED_PASSWORD/" "$CONFIG_PATH"
+  fi
 fi
 
 # Set file and directory permissions after installation
@@ -92,4 +113,4 @@ else
 fi
 
 
-echo "Odoo started at http://localhost:$PORT | Master Password: minhng.info | Live chat port: $CHAT"
+echo "Odoo started at http://localhost:$PORT | Master Password: $MASTER_PASSWORD | Live chat port: $CHAT"
