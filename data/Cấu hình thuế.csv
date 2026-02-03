@@ -1,0 +1,15 @@
+name,rate,type_tax_use,description
+Thuế GTGT 0%,0,sale,VAT 0%
+Thuế GTGT 5%,5,sale,VAT 5%
+Thuế GTGT 10%,10,sale,VAT 10%
+Thuế GTGT 8%,8,sale,VAT 8%
+Thuế GTGT 0% (Mua),0,purchase,VAT 0% Purchase
+Thuế GTGT 5% (Mua),5,purchase,VAT 5% Purchase
+Thuế GTGT 10% (Mua),10,purchase,VAT 10% Purchase
+Thuế GTGT 8% (Mua),8,purchase,VAT 8% Purchase
+Không chịu thuế,0,sale,Tax Exempt
+Thuế nhập khẩu 5%,5,purchase,Import Tax 5%
+Thuế nhập khẩu 10%,10,purchase,Import Tax 10%
+Thuế tiêu thụ đặc biệt 10%,10,sale,Special Consumption Tax 10%
+Thuế tiêu thụ đặc biệt 20%,20,sale,Special Consumption Tax 20%
+Thuế tiêu thụ đặc biệt 30%,30,sale,Special Consumption Tax 30%

@@ -8,7 +8,7 @@ services:
       - POSTGRES_DB=postgres
     restart: always             # run as a service
     volumes:
-        - ./postgresql:/var/lib/postgresql/18/docker      # Important Change: the PGDATA environment variable of the image was changed to be version specific in PostgreSQL 18 and above⁠
+      - ./postgresql:/var/lib/postgresql/18/docker      # Important Change: the PGDATA environment variable of the image was changed to be version specific in PostgreSQL 18 and above⁠
 
   odoo19:
     image: odoo:19
@@ -26,6 +26,7 @@ services:
       - PASSWORD=odoo19@2025
       - PIP_BREAK_SYSTEM_PACKAGES=1
     volumes:
+      - ./enterprise:/mnt/enterprise-addons
       #- /etc/timezone:/etc/timezone:ro
       #- /etc/localtime:/etc/localtime:ro
       - ./entrypoint.sh:/entrypoint.sh
